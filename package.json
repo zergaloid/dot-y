@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.jsx",
   "scripts": {
-    "start": "npm run --prefix=.dot watch",
+    "start": "CNAME=localhost npm run --prefix=.dot watch",
     "pack": "npm run --prefix=.dot pack",
     "install": "npm run --prefix=.dot install"
   },

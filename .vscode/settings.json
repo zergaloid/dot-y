@@ -6,7 +6,7 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "**/.dot": true,
+        "**/.dot": false,
         "**/.vscode": true,
         "**/.serve-with-acme": true,
     },
