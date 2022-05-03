@@ -1,0 +1,21 @@
+{
+  "name": "TODO",
+  "version": "1.0.0",
+  "main": "index.jsx",
+  "scripts": {
+    "start": "npm run --prefix=.dot watch",
+    "pack": "npm run --prefix=.dot pack",
+    "install": "npm run --prefix=.dot install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zergaloid/dot-y.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zergaloid/dot-y/issues"
+  },
+  "homepage": "https://github.com/zergaloid/dot-y#readme"
+}

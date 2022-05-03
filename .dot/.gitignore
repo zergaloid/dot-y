@@ -1,0 +1,10 @@
+# Sensitive values
+.env
+.serve-with-acme
+
+# Compiled content
+build
+
+# Node
+package-lock.json
+node_modules

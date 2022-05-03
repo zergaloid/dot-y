@@ -1,0 +1,17 @@
+{
+    "files.exclude":{
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.dot": true,
+        "**/.vscode": true,
+        "**/.serve-with-acme": true,
+    },
+    "css.validate": false,
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": true
+}

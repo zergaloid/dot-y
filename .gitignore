@@ -1,0 +1,6 @@
+# Sensitive values
+.env
+.serve-with-acme
+
+# Compiled content
+build

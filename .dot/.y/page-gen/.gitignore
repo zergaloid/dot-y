@@ -1,0 +1,6 @@
+# Node and NPM
+*lock*
+node_modules
+
+# Compiled content
+pockaged
