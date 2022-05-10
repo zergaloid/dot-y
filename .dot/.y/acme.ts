@@ -2,9 +2,9 @@ import {
   Handler,
   serve,
   serveTls,
-} from "https://deno.land/std@0.126.0/http/server.ts";
-import * as jose from "https://deno.land/x/jose@v4.6.0/index.ts";
-import { sha256 } from "https://denopkg.com/chiefbiiko/sha256@v1.0.0/mod.ts";
+} from "https://deno.land/std/http/server.ts";
+import * as jose from "https://deno.land/x/jose/index.ts";
+import { sha256 } from "https://denopkg.com/chiefbiiko/sha256/mod.ts";
 import { exists } from "https://deno.land/std/fs/mod.ts";
 
 const defaultAddRecord = (record: string, type: string, values: string[]) =>

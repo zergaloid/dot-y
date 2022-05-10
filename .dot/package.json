@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "install": "npm --prefix .y/page-gen i",
-    "pack": "npm --prefix .y/page-gen run build && mkdir -p ../build/.dot/.y && cp ./.y/*.ts ../build/.dot/.y && cp tsconfig.json ../build && cp ../index.jsx ../build/Run.jsx && cp -r ../pages ../build && cp -r ../static ../build",
+    "pack": "npm --prefix .y/page-gen run build && mkdir -p ../build/.dot/.y && cp ./.y/*.ts ../build/.dot/.y && cp tsconfig.json ../build && cp ../*.jsx ../build && cp -r ../pages ../build && cp -r ../static ../build",
     "watch": "npm --prefix .y/page-gen run watch & deno run --config tsconfig.json -A --unstable --watch --no-check ../index.jsx"
   },
   "keywords": [],

@@ -1,70 +1,92 @@
 import { serveWithACME } from "./acme.ts";
-import {
-  DOMParser,
-  Element,
-  HTMLDocument,
-} from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
 import { mime } from "https://raw.githubusercontent.com/Tyrenn/mimetypes/main/mod.ts";
 import { render } from "https://cdn.skypack.dev/preact-render-to-string@v5.1.12";
 
 const Template = render;
-
-export type Reply = [Uint8Array, ResponseInit];
 export type Object<T> = Record<string, T>;
 
 // @ts-ignore: ignore circular
 export type Binder = Record<
   string,
-  | ((request: Request) => Reply)
+  | ((request: Request) => Response)
   | Binder
 >;
 
 const Decoder = new TextDecoder();
 const Encoder = new TextEncoder();
 
-const useStatic = (request: Request) => {
-  const key = new URL(request.url).pathname;
-  const path = `../build${key}`;
+const HTML = Decoder.decode(Deno.readFileSync(Deno.env.get("PROD") ? './static/Index.html' : '../static/Index.html'))
 
-  return [
-    Deno.readFile(path),
-    {
-      headers: {
-        "Content-Type": mime.getType(path),
-      },
-    },
-  ];
+const cache: Record<string, Uint8Array> = {}
+
+const useStatic = async (request: Request) => {
+  const key = new URL(request.url).pathname;
+  const path = Deno.env.get("PROD") ? `./${key}` : `../build${key}`;
+
+  if (!cache[key])
+    cache[key] = await Deno.readFile(path)
+
+  return new Response(cache[key], {
+    headers: {
+      "Content-Type": mime.getType(path),
+    } as HeadersInit,
+  })
 };
 
-const cache: Record<string, [string, ResponseInit]> = {};
+const useTemplate = ({ template, status = 200 }: {
+  template: any;
+  status?: number;
+},
+) => {
+  return (request: Request) => {
+    const etag = (request.headers.get('ETag') as string) + request.url
 
-const useTemplate = (
+    if (!cache[etag])
+    cache[etag] = Encoder.encode(HTML.replace("TEMPLATE", template))
+
+
+    return new Response(cache[etag], {
+      status,
+      headers: {
+        "Content-Type": "text/html;charset=utf-8",
+        "Server": ".y",
+      },
+    })
+  };
+};
+
+const useStreamedTemplate = (pages: Binder,
   { template, status = 200 }: {
     template: any;
     status?: number;
   },
 ) => {
   return (request: Request) => {
-    const cacheKey = btoa(request.headers.get('ETag') as string + request.url);
-    const cached = cache[cacheKey];
-
-    if (cached) {
-      return cached;
+    const uuid = crypto.randomUUID()
+    const stream: TransformStream = new TransformStream({
+      start() { },
+      async transform(chunk, controller) {
+        chunk = await chunk
+        controller.enqueue(`data: ${chunk}\n\n`)
+      },
+    })
+    pages[`/stream/${uuid}`] = {
+      GET: () => {
+        return new Response(stream.readable.pipeThrough(new TextEncoderStream()), {
+          headers: {
+            "Content-Type": "text/event-stream",
+          },
+        });
+      }
     }
 
-    const html = Decoder.decode(Deno.readFileSync('../static/Index.html'))
-
-    const r = [html.replace("TEMPLATE", template), {
+    return new Response(HTML.replace("TEMPLATE", template({ uuid, realtime: stream.writable.getWriter() })), {
       status,
       headers: {
         "Content-Type": "text/html;charset=utf-8",
         "Server": ".y",
       },
-    } as ResponseInit];
-
-    cache[cacheKey] = r as [string, ResponseInit];
-
-    return r;
+    });
   };
 };
 
@@ -79,16 +101,8 @@ const useWhole = (templatePathBinder: Binder, cname: string) => {
         pathname: "/404",
       } as URL;
     }
-
-    const reply = await templatePathBinder[location.pathname][request.method](
+    return await templatePathBinder[location.pathname][request.method](
       request,
-    );
-    const awaitedReply = await reply[0];
-    return new Response(
-      awaitedReply instanceof Uint8Array
-        ? awaitedReply
-        : Encoder.encode(awaitedReply),
-      reply[1],
     );
   }, cname);
 };
@@ -97,7 +111,7 @@ const useGuard = (request: Record<string, string>, guard: Record<string, (value:
   for (const key of Object.keys(guard)) {
     if (!guard[key](request[key])) {
       return [
-        `Guard: Invalid or Empty Header: ${key}`,
+        `Guard: ${key}`,
         {
           status: 400,
         },
@@ -107,4 +121,4 @@ const useGuard = (request: Record<string, string>, guard: Record<string, (value:
   return false;
 };
 
-export { Decoder, Encoder, Template, useGuard, useStatic, useTemplate, useWhole };
+export { Decoder, Encoder, Template, useGuard, useStatic, useTemplate, useStreamedTemplate, useWhole };
